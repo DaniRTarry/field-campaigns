@@ -22,7 +22,7 @@ Campaign folders are named `YYYY-campaign-name`, so they sort chronologically.
 
 | Campaign | Year | Region | Platforms | Folder |
 |----------|------|--------|-----------|--------|
-| _Campaign name_ | YYYY | _Region_ | _Drifters, gliders, CTD, ADCP..._ | [`YYYY-campaign-name`](./YYYY-campaign-name) |
+| _SOCIB_MeDITTOPROTECT_Nov2026_ | 2026 | _Cabrera_ | _ARVORC, drifters, ADCP, satellite..._ | [`2026-SOCIB_MeDITTOPROTECT_Nov2026`](./2026-SOCIB_MeDITTOPROTECT_Nov2026) |
 
 ## Data
 
