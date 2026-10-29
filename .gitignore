@@ -1,0 +1,56 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# --- Jupyter ---
+.ipynb_checkpoints/
+
+# --- Environments ---
+.venv/
+venv/
+env/
+.conda/
+.env
+
+# --- Data (raw data are not versioned; see README) ---
+data/
+raw/
+*.nc
+*.nc4
+*.h5
+*.hdf5
+*.mat
+*.zarr/
+*.grib
+*.grb2
+*.cnv
+*.hex
+*.000
+*.LTA
+*.STA
+*.ENX
+*.ENS
+
+# Uncomment if CSV/Parquet files are large or not yours to share
+# *.csv
+# *.parquet
+
+# --- Large outputs ---
+*.mp4
+*.gif
+*.tif
+*.tiff
+
+# --- Editors / IDEs ---
+.vscode/
+.idea/
+*.swp
+*~
+
+# --- OS ---
+.DS_Store
+Thumbs.db
