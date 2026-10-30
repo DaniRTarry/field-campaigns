@@ -54,3 +54,7 @@ raw/
 # --- OS ---
 .DS_Store
 Thumbs.db
+
+# --- Local working notes ---
+/CLAUDE.md
+/STATUS.md
