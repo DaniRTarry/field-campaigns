@@ -8,7 +8,7 @@ Abrir **VmDas** → **Options** → **Edit Data Options**.
 
 1. **Communications**: no tocar.
 2. **File name**:
-   - **Folder**: `SOCIB_MeDITTOPROTECT_Nov2026`
+   - **Folder**: `2026-11_SOCIB_MeDITTOPROTECT_Nov2026`
    - **Number**: empezar en `1` e ir incrementando en cada nuevo registro. Por defecto VmDas propone el siguiente número, pero revisarlo siempre.
 3. **ADCP Setup**:
    - Activar/desactivar **Bottom Track (BT)** según la zona.
@@ -37,7 +37,7 @@ Abrir **VmDas** → **Options** → **Edit Data Options**.
    - **Ensemble**: si el archivo tiene más de 256 pings, introducir aquí el número apuntado en el paso anterior.
    - Revisar la configuración de Andrea (hoja en papel en el barco).
    - **Write File** en formato **TXT** y **MAT**.
-4. Guardar en `SISTEMA/OCEANO/RDI/DATOS_CONVERTED/SOCIB_MeDITTOPROTECT_Nov2026/`
+4. Guardar en `SISTEMA/OCEANO/RDI/DATOS_CONVERTED/2026-11_SOCIB_MeDITTOPROTECT_Nov2026/`
 
 > [!WARNING]
 > Si el archivo tiene más de 256 pings y no se introduce el número en **Ensemble**, los datos exportados saldrán cortados.
