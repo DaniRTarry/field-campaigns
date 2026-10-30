@@ -11,7 +11,7 @@ Abrir **VmDas** → **Options** → **Edit Data Options**.
    - **Folder**: `2026-11_SOCIB_MeDITTOPROTECT_Nov2026`
    - **Number**: empezar en `1` e ir incrementando en cada nuevo registro. Por defecto VmDas propone el siguiente número, pero revisarlo siempre.
 3. **ADCP Setup**:
-   - Activar/desactivar **Bottom Track (BT)** según la zona.
+   - **Bottom Track (BT)**: dejarlo **activado siempre** (también en el talud). Ver nota abajo.
    - Planificar los **bins** (número y tamaño).
 4. **Recording** — comprobar antes de dejarlo corriendo:
    - **ADCP comms**: debe aparecer *pinging* → funcionando.
@@ -19,6 +19,13 @@ Abrir **VmDas** → **Options** → **Edit Data Options**.
 
 > [!WARNING]
 > Si algo no funciona, cerrar VmDas y volver a abrirlo. Se generará un archivo nuevo con el número siguiente: **anotar que el archivo anterior es malo**.
+
+> [!IMPORTANT]
+> **Bottom Track: por qué dejarlo siempre activado**
+> - Con fondo a menos de ~500 m, el eco del fondo contamina los bins más profundos. Sin BT no se puede saber dónde está el fondo, y esos bins pasan como datos buenos.
+> - Con fondo más profundo, el BT no encuentra el fondo y no da datos, pero no estropea nada. Solo cuesta algunos pings de agua (algo más de ruido en cada promedio).
+> - Para cambiarlo hay que parar y reiniciar VmDas. En el talud (de 200 a 1000 m en poco espacio) acabaría cortando secciones, y si se olvida reactivarlo al volver a la plataforma se pierde el control del fondo.
+> - Solo desactivarlo en un tramo largo y continuo sobre fondo de **más de ~600 m**, en un cambio de rumbo o entre secciones. **Reactivarlo antes de volver a menos de ~500 m** y anotarlo.
 
 ### 2. Visualización — WinADCP
 
