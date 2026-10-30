@@ -20,6 +20,9 @@ Multi-platform field campaign in the Cabrera Archipelago and Cabrera Channel (Ba
 │   ├── SWOT_passes.ipynb
 │   ├── adcp_quicklook.ipynb
 │   └── post-cruise_ADCP.ipynb
+├── src/
+│   ├── vmdas.py             # VmDas PD0 reader
+│   └── adcp_quicklook.py    # ADCP quick-look processing, QC and plots
 ├── figures/
 │   └── SWOT_all_passes.png
 └── data/                    # local only, not versioned
@@ -34,6 +37,8 @@ Multi-platform field campaign in the Cabrera Archipelago and Cabrera Channel (Ba
 | `selected_passes.csv` | SWOT cycle/pass numbers and overpass time windows over the area (`;`-separated). |
 | `figures/SWOT_all_passes.png` | Output figure of `SWOT_passes.ipynb`. |
 | `notebooks/adcp_quicklook.ipynb` | Onboard quick-look of raw VmDas files (`.LTA`/`.STA`/`.ENX`): QC, absolute velocities (GPS or bottom track), sections and layer map. Figures to `figures/adcp_quicklook/`, NetCDF to `data/ADCP_quicklook/`. |
+| `src/vmdas.py` | Reader for VmDas PD0 files (`.LTA`/`.STA`/`.ENX`) and `.VMO` settings into an xarray Dataset. Used by `adcp_quicklook.ipynb`. |
+| `src/adcp_quicklook.py` | Absolute velocities, QC (percent good, error velocity, side-lobe cut, ship manoeuvres) and quick-look plots. Used by `adcp_quicklook.ipynb`. |
 | `notebooks/post-cruise_ADCP.ipynb` | Vessel-mounted ADCP transect processing (work in progress). |
 | `RV-SOCIB_ADCP_setup.md` | Onboard ADCP procedure (VmDas acquisition, WinADCP export), in Spanish for the onboard team. |
 
