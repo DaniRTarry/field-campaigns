@@ -8,15 +8,17 @@ This repository collects the code, notebooks and analysis I develop for oceanogr
 
 ```
 field-campaigns/
-├── YYYY-campaign-name/
+├── YYYY-MM_campaign-name/
 │   ├── README.md        # campaign overview, platforms, data sources
+│   ├── *.csv            # small hand-made inputs (pass lists, stations, waypoints)
 │   ├── notebooks/       # exploratory analysis and figures
 │   ├── src/             # processing scripts and reusable functions
-│   └── figures/         # output figures (optional)
+│   ├── figures/         # output figures (optional)
+│   └── data/            # local data, not versioned
 └── ...
 ```
 
-Campaign folders are named `YYYY-campaign-name`, so they sort chronologically.
+Campaign folders are named `YYYY-MM_campaign-name` (year and month of the cruise), so they sort chronologically.
 
 ## Campaigns
 
