@@ -60,6 +60,6 @@ machine tds-odatis.aviso.altimetry.fr login <user> password <password>
 
 ## Requirements
 
-`numpy`, `pandas`, `xarray`, `matplotlib`, `cartopy`, `requests`, `siphon`, `tqdm`.
+`numpy`, `pandas`, `xarray`, `matplotlib`, `cmocean`, `cartopy`, `requests`, `siphon`, `tqdm`.
 
 Run the notebooks from `notebooks/` (they reach inputs, `data/` and `figures/` through `../`).

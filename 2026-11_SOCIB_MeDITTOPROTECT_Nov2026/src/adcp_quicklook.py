@@ -1,9 +1,14 @@
 """Quick-look processing of VmDas ship ADCP data: absolute velocities, QC and plots."""
+import cmocean
 import matplotlib.pyplot as plt
 import numpy as np
 import xarray as xr
 
 from vmdas import VMDAS_NAME
+
+# Speed colormap for arrows: cmocean speed without its palest end, so weak
+# currents stay visible on a white background
+SPEED_CMAP_ARROWS = cmocean.tools.crop_by_percent(cmocean.cm.speed, 25, which="min")
 
 
 def process(ds, ref="nav", pg_min=50, err_max=0.2, sidelobe_cells=1.0, dv_max=1.0):
@@ -115,9 +120,9 @@ def plot_sections(ds, outfile=None, vmax=0.5, max_depth=None):
     ymax = max_depth or float(ds.depth.where(ds.u.notnull().any("time")).max()) + 10
     dsp = _with_gaps(ds[["u", "v", "speed", "bt_depth"]])
     fig, axes = plt.subplots(3, 1, figsize=(11, 9), sharex=True, constrained_layout=True)
-    panels = [("u", "u (east) [m/s]", "RdBu_r", -vmax, vmax),
-              ("v", "v (north) [m/s]", "RdBu_r", -vmax, vmax),
-              ("speed", "speed [m/s]", "viridis", 0, vmax)]
+    panels = [("u", "u (east) [m/s]", cmocean.cm.balance, -vmax, vmax),
+              ("v", "v (north) [m/s]", cmocean.cm.balance, -vmax, vmax),
+              ("speed", "speed [m/s]", cmocean.cm.speed, 0, vmax)]
     for ax, (var, label, cmap, lo, hi) in zip(axes, panels):
         pc = ax.pcolormesh(dsp.time, dsp.depth, dsp[var].T, cmap=cmap, vmin=lo, vmax=hi,
                            shading="nearest")
@@ -134,31 +139,84 @@ def plot_sections(ds, outfile=None, vmax=0.5, max_depth=None):
     return fig
 
 
-def plot_map(ds, outfile=None, layer=(20, 60), arrow_scale=None):
-    lay = ds.sel(depth=slice(*layer))
-    um, vm = lay.u.mean("depth"), lay.v.mean("depth")
+def along_track_average(lon, lat, u, v, dx_km=2.0):
+    """Average current vectors in bins of along-track distance.
 
-    fig, ax = plt.subplots(figsize=(8, 8), constrained_layout=True)
-    ax.plot(ds.lon, ds.lat, ".-", color="0.6", lw=1, ms=3, zorder=1)
-    ok = np.isfinite(um) & np.isfinite(vm)
-    if arrow_scale is None:
-        span = max(float(ds.lon.max() - ds.lon.min()), float(ds.lat.max() - ds.lat.min()), 0.05)
-        arrow_scale = 0.5 / (0.08 * span)  # 0.5 m/s ~ 8 % of the plot width
-    q = ax.quiver(ds.lon[ok], ds.lat[ok], um[ok], vm[ok], np.hypot(um[ok], vm[ok]),
-                  cmap="plasma", scale=arrow_scale, scale_units="xy", angles="uv",
-                  width=0.004, zorder=3)
-    ax.quiverkey(q, 0.85, 0.05, 0.5, "0.5 m/s", coordinates="axes")
-    fig.colorbar(q, ax=ax, label="speed [m/s]", shrink=0.7)
+    Bins are dx_km long along the ship track, so ensembles taken on station
+    (ship not moving) fall in one bin and give a single vector instead of a
+    pile of overlapping ones. Returns lon, lat, u, v of the bins with data.
+    """
+    lon, lat, u, v = (np.asarray(a, float) for a in (lon, lat, u, v))
+    pos = np.isfinite(lon) & np.isfinite(lat)
+    lon, lat, u, v = lon[pos], lat[pos], u[pos], v[pos]
+    R = 6371.0
+    step = np.hypot(np.deg2rad(np.diff(lon)) * np.cos(np.deg2rad(lat[:-1])),
+                    np.deg2rad(np.diff(lat))) * R
+    ibin = (np.r_[0, np.cumsum(step)] // dx_km).astype(int)
+    out = []
+    for i in np.unique(ibin):
+        m = (ibin == i) & np.isfinite(u) & np.isfinite(v)
+        if m.any():
+            out.append((lon[m].mean(), lat[m].mean(), u[m].mean(), v[m].mean()))
+    return np.array(out).T if out else np.empty((4, 0))
+
+
+def _nice(x):
+    """Round x to 1, 2 or 5 x 10^n (for the reference arrow)."""
+    if not np.isfinite(x) or x <= 0:
+        return 0.1
+    e = 10 ** np.floor(np.log10(x))
+    return min((1, 2, 5, 10), key=lambda k: abs(k * e - x)) * e
+
+
+def plot_map(ds, outfile=None, layer=(20, 60), dx_km=2.0, key=None):
+    """Ship track and currents averaged over a depth layer.
+
+    dx_km : along-track averaging distance (km) for the vectors; None plots
+            every ensemble.
+    key   : reference arrow (m/s); None = 90th percentile of the speed, rounded.
+            The reference arrow is 10 % of the plot width.
+    """
+    lay = ds.sel(depth=slice(*layer))
+    um, vm = lay.u.mean("depth").values, lay.v.mean("depth").values
+    if dx_km:
+        x, y, uq, vq = along_track_average(ds.lon, ds.lat, um, vm, dx_km)
+    else:
+        ok = np.isfinite(um) & np.isfinite(vm)
+        x, y, uq, vq = ds.lon.values[ok], ds.lat.values[ok], um[ok], vm[ok]
+    spd = np.hypot(uq, vq)
+    if key is None:
+        key = _nice(np.percentile(spd, 90)) if spd.size else 0.1
+
+    # Square extent in km, so the track fills the plot whatever its orientation
+    lat0 = float(ds.lat.mean())
+    coslat = np.cos(np.deg2rad(lat0))
+    lon_c = (float(ds.lon.max()) + float(ds.lon.min())) / 2
+    lat_c = (float(ds.lat.max()) + float(ds.lat.min())) / 2
+    half = 0.55 * max(float(ds.lon.max() - ds.lon.min()) * coslat,
+                      float(ds.lat.max() - ds.lat.min()), 0.02)
+
+    fig, ax = plt.subplots(figsize=(8.5, 8), constrained_layout=True)
+    ax.plot(ds.lon, ds.lat, "-", color="0.6", lw=1, zorder=1)
+    q = ax.quiver(x, y, uq, vq, spd, cmap=SPEED_CMAP_ARROWS, clim=(0, 2 * key),
+                  scale=key / 0.1, scale_units="width", angles="uv",
+                  width=0.005, headwidth=3.5, headlength=4, zorder=3)
+    ax.quiverkey(q, 0.9, -0.08, key, "%g m/s" % key, coordinates="axes", labelpos="W")
+    fig.colorbar(q, ax=ax, label="speed [m/s]", shrink=0.7, extend="max")
     ax.plot(ds.lon[0], ds.lat[0], "g^", ms=9, label="start", zorder=4)
     ax.plot(ds.lon[-1], ds.lat[-1], "rs", ms=8, label="end", zorder=4)
-    ax.set_aspect(1 / np.cos(np.deg2rad(float(ds.lat.mean()))))
+    ax.set_aspect(1 / coslat)
+    ax.set_xlim(lon_c - half / coslat, lon_c + half / coslat)
+    ax.set_ylim(lat_c - half, lat_c + half)
     ax.set_xlabel("longitude")
     ax.set_ylabel("latitude")
     ax.grid(alpha=0.3)
     ax.legend(loc="upper left", fontsize=8)
     t0 = str(ds.time.values[0])[:16].replace("T", " ")
     t1 = str(ds.time.values[-1])[:16].replace("T", " ")
-    ax.set_title("Currents %d-%d m  |  %s - %s UTC" % (layer[0], layer[1], t0, t1), fontsize=10)
+    avg = "%g km along-track averages" % dx_km if dx_km else "all ensembles"
+    ax.set_title("Currents %d-%d m (%s)  |  %s - %s UTC" % (layer[0], layer[1], avg, t0, t1),
+                 fontsize=10)
     if outfile:
         fig.savefig(outfile, dpi=150)
     return fig
